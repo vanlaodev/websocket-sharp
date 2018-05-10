@@ -97,7 +97,7 @@ namespace WebSocketSharp
     private bool                           _inContinuation;
     private volatile bool                  _inMessage;
     private volatile Logger                _logger;
-    private static readonly int            _maxRetryCountForConnect;
+    private int                            _maxRetryCountForConnect = 10;
     private Action<MessageEventArgs>       _message;
     private Queue<MessageEventArgs>        _messageEventQueue;
     private uint                           _nonceCount;
@@ -119,6 +119,7 @@ namespace WebSocketSharp
     private Uri                            _uri;
     private const string                   _version = "13";
     private TimeSpan                       _waitTime;
+    private bool                           _limitRetryCountForConnect = true;
 
     #endregion
 
@@ -154,7 +155,6 @@ namespace WebSocketSharp
 
     static WebSocket ()
     {
-      _maxRetryCountForConnect = 10;
       EmptyBytes = new byte[0];
       FragmentLength = 1016;
       RandomNumber = new RNGCryptoServiceProvider ();
@@ -329,6 +329,24 @@ namespace WebSocketSharp
     #endregion
 
     #region Public Properties
+
+    /// <summary>
+    /// Gets or sets the maximum retry count for connection 
+    /// </summary>
+    public int MaxRetryCountForConnect
+    {
+        get { return _maxRetryCountForConnect; }
+        set { _maxRetryCountForConnect = value; }
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum retry count for connection 
+    /// </summary>
+    public bool LimitRetryCountForConnect
+    {
+        get { return _limitRetryCountForConnect; }
+        set { _limitRetryCountForConnect = value; }
+    }
 
     /// <summary>
     /// Gets or sets the compression method used to compress a message.
@@ -1247,7 +1265,7 @@ namespace WebSocketSharp
           return false;
         }
 
-        if (_retryCountForConnect > _maxRetryCountForConnect) {
+        if (_limitRetryCountForConnect && _retryCountForConnect > _maxRetryCountForConnect) {
           var msg = "An opportunity for reconnecting has been lost.";
           _logger.Error (msg);
 
@@ -1263,7 +1281,7 @@ namespace WebSocketSharp
           doHandshake ();
         }
         catch (Exception ex) {
-          _retryCountForConnect++;
+          if(_limitRetryCountForConnect) _retryCountForConnect++;
 
           _logger.Fatal (ex.Message);
           _logger.Debug (ex.ToString ());
@@ -3232,7 +3250,7 @@ namespace WebSocketSharp
         throw new InvalidOperationException (msg);
       }
 
-      if (_retryCountForConnect > _maxRetryCountForConnect) {
+      if (_limitRetryCountForConnect && _retryCountForConnect > _maxRetryCountForConnect) {
         var msg = "A series of reconnecting has failed.";
         throw new InvalidOperationException (msg);
       }
@@ -3282,7 +3300,7 @@ namespace WebSocketSharp
         throw new InvalidOperationException (msg);
       }
 
-      if (_retryCountForConnect > _maxRetryCountForConnect) {
+      if (_limitRetryCountForConnect && _retryCountForConnect > _maxRetryCountForConnect) {
         var msg = "A series of reconnecting has failed.";
         throw new InvalidOperationException (msg);
       }
