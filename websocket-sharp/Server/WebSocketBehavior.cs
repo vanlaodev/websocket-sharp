@@ -536,8 +536,56 @@ namespace WebSocketSharp.Server
     }
 
     /// <summary>
-    /// Sends the specified data to a client asynchronously using the WebSocket
-    /// connection.
+    /// Sends the data from the specified stream to a client using
+    /// the WebSocket connection.
+    /// </summary>
+    /// <param name="stream">
+    ///   <para>
+    ///   A <see cref="Stream"/> instance from which to read the data to send.
+    ///   </para>
+    ///   <para>
+    ///   The data is sent as the binary data.
+    ///   </para>
+    /// </param>
+    /// <param name="length">
+    /// An <see cref="int"/> that specifies the number of bytes to send.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The current state of the connection is not Open.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="stream"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    ///   <para>
+    ///   <paramref name="stream"/> cannot be read.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   <paramref name="length"/> is less than 1.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   No data could be read from <paramref name="stream"/>.
+    ///   </para>
+    /// </exception>
+    protected void Send (Stream stream, int length)
+    {
+      if (_websocket == null) {
+        var msg = "The current state of the connection is not Open.";
+        throw new InvalidOperationException (msg);
+      }
+
+      _websocket.Send (stream, length);
+    }
+
+    /// <summary>
+    /// Sends the specified data to a client asynchronously using
+    /// the WebSocket connection.
     /// </summary>
     /// <remarks>
     /// This method does not wait for the send to be complete.
@@ -575,83 +623,164 @@ namespace WebSocketSharp.Server
     }
 
     /// <summary>
-    /// Sends the specified <paramref name="file"/> as binary data asynchronously to
-    /// the client on a session.
+    /// Sends the specified file to a client asynchronously using
+    /// the WebSocket connection.
     /// </summary>
     /// <remarks>
-    ///   <para>
-    ///   This method is available after the WebSocket connection has been established.
-    ///   </para>
-    ///   <para>
-    ///   This method doesn't wait for the send to be complete.
-    ///   </para>
+    /// This method does not wait for the send to be complete.
     /// </remarks>
-    /// <param name="file">
-    /// A <see cref="FileInfo"/> that represents the file to send.
+    /// <param name="fileInfo">
+    ///   <para>
+    ///   A <see cref="FileInfo"/> that specifies the file to send.
+    ///   </para>
+    ///   <para>
+    ///   The file is sent as the binary data.
+    ///   </para>
     /// </param>
     /// <param name="completed">
-    /// An <c>Action&lt;bool&gt;</c> delegate that references the method(s) called when
-    /// the send is complete. A <see cref="bool"/> passed to this delegate is <c>true</c>
-    /// if the send is complete successfully.
+    ///   <para>
+    ///   An <c>Action&lt;bool&gt;</c> delegate or <see langword="null"/>
+    ///   if not needed.
+    ///   </para>
+    ///   <para>
+    ///   The delegate invokes the method called when the send is complete.
+    ///   </para>
+    ///   <para>
+    ///   <c>true</c> is passed to the method if the send has done with
+    ///   no error; otherwise, <c>false</c>.
+    ///   </para>
     /// </param>
-    protected void SendAsync (FileInfo file, Action<bool> completed)
+    /// <exception cref="InvalidOperationException">
+    /// The current state of the connection is not Open.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="fileInfo"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    ///   <para>
+    ///   The file does not exist.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   The file could not be opened.
+    ///   </para>
+    /// </exception>
+    protected void SendAsync (FileInfo fileInfo, Action<bool> completed)
     {
-      if (_websocket != null)
-        _websocket.SendAsync (file, completed);
+      if (_websocket == null) {
+        var msg = "The current state of the connection is not Open.";
+        throw new InvalidOperationException (msg);
+      }
+
+      _websocket.SendAsync (fileInfo, completed);
     }
 
     /// <summary>
-    /// Sends text <paramref name="data"/> asynchronously to the client on a session.
+    /// Sends the specified data to a client asynchronously using
+    /// the WebSocket connection.
     /// </summary>
     /// <remarks>
-    ///   <para>
-    ///   This method is available after the WebSocket connection has been established.
-    ///   </para>
-    ///   <para>
-    ///   This method doesn't wait for the send to be complete.
-    ///   </para>
+    /// This method does not wait for the send to be complete.
     /// </remarks>
     /// <param name="data">
     /// A <see cref="string"/> that represents the text data to send.
     /// </param>
     /// <param name="completed">
-    /// An <c>Action&lt;bool&gt;</c> delegate that references the method(s) called when
-    /// the send is complete. A <see cref="bool"/> passed to this delegate is <c>true</c>
-    /// if the send is complete successfully.
+    ///   <para>
+    ///   An <c>Action&lt;bool&gt;</c> delegate or <see langword="null"/>
+    ///   if not needed.
+    ///   </para>
+    ///   <para>
+    ///   The delegate invokes the method called when the send is complete.
+    ///   </para>
+    ///   <para>
+    ///   <c>true</c> is passed to the method if the send has done with
+    ///   no error; otherwise, <c>false</c>.
+    ///   </para>
     /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The current state of the connection is not Open.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="data"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="data"/> could not be UTF-8-encoded.
+    /// </exception>
     protected void SendAsync (string data, Action<bool> completed)
     {
-      if (_websocket != null)
-        _websocket.SendAsync (data, completed);
+      if (_websocket == null) {
+        var msg = "The current state of the connection is not Open.";
+        throw new InvalidOperationException (msg);
+      }
+
+      _websocket.SendAsync (data, completed);
     }
 
     /// <summary>
-    /// Sends binary data from the specified <see cref="Stream"/> asynchronously to
-    /// the client on a session.
+    /// Sends the data from the specified stream to a client asynchronously
+    /// using the WebSocket connection.
     /// </summary>
     /// <remarks>
-    ///   <para>
-    ///   This method is available after the WebSocket connection has been established.
-    ///   </para>
-    ///   <para>
-    ///   This method doesn't wait for the send to be complete.
-    ///   </para>
+    /// This method does not wait for the send to be complete.
     /// </remarks>
     /// <param name="stream">
-    /// A <see cref="Stream"/> from which contains the binary data to send.
+    ///   <para>
+    ///   A <see cref="Stream"/> instance from which to read the data to send.
+    ///   </para>
+    ///   <para>
+    ///   The data is sent as the binary data.
+    ///   </para>
     /// </param>
     /// <param name="length">
-    /// An <see cref="int"/> that represents the number of bytes to send.
+    /// An <see cref="int"/> that specifies the number of bytes to send.
     /// </param>
     /// <param name="completed">
-    /// An <c>Action&lt;bool&gt;</c> delegate that references the method(s) called when
-    /// the send is complete. A <see cref="bool"/> passed to this delegate is <c>true</c>
-    /// if the send is complete successfully.
+    ///   <para>
+    ///   An <c>Action&lt;bool&gt;</c> delegate or <see langword="null"/>
+    ///   if not needed.
+    ///   </para>
+    ///   <para>
+    ///   The delegate invokes the method called when the send is complete.
+    ///   </para>
+    ///   <para>
+    ///   <c>true</c> is passed to the method if the send has done with
+    ///   no error; otherwise, <c>false</c>.
+    ///   </para>
     /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The current state of the connection is not Open.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="stream"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    ///   <para>
+    ///   <paramref name="stream"/> cannot be read.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   <paramref name="length"/> is less than 1.
+    ///   </para>
+    ///   <para>
+    ///   -or-
+    ///   </para>
+    ///   <para>
+    ///   No data could be read from <paramref name="stream"/>.
+    ///   </para>
+    /// </exception>
     protected void SendAsync (Stream stream, int length, Action<bool> completed)
     {
-      if (_websocket != null)
-        _websocket.SendAsync (stream, length, completed);
+      if (_websocket == null) {
+        var msg = "The current state of the connection is not Open.";
+        throw new InvalidOperationException (msg);
+      }
+
+      _websocket.SendAsync (stream, length, completed);
     }
 
     #endregion
