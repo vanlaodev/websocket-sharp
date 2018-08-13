@@ -1307,7 +1307,7 @@ namespace WebSocketSharp.Server
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     ///   <para>
-    ///   There is no server certificate for secure connections.
+    ///   There is no server certificate for secure connection.
     ///   </para>
     ///   <para>
     ///   -or-
@@ -1332,34 +1332,24 @@ namespace WebSocketSharp.Server
     }
 
     /// <summary>
-    /// Stops receiving incoming handshake requests and closes
-    /// each connection.
+    /// Stops receiving incoming handshake requests.
     /// </summary>
-    /// <remarks>
-    /// This method does nothing if the server is not started,
-    /// it is shutting down, or it has already stopped.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// The underlying <see cref="TcpListener"/> has failed to stop.
     /// </exception>
     public void Stop ()
     {
-      stop (1005, String.Empty);
+      stop (1001, String.Empty);
     }
 
     /// <summary>
-    /// Stops receiving incoming handshake requests and closes each
-    /// connection with the specified <paramref name="code"/> and
-    /// <paramref name="reason"/>.
+    /// Stops receiving incoming handshake requests and closes each connection
+    /// with the specified code and reason.
     /// </summary>
-    /// <remarks>
-    /// This method does nothing if the server is not started,
-    /// it is shutting down, or it has already stopped.
-    /// </remarks>
     /// <param name="code">
     ///   <para>
-    ///   A <see cref="ushort"/> that represents the status code
-    ///   indicating the reason for the close.
+    ///   A <see cref="ushort"/> that represents the status code indicating
+    ///   the reason for the close.
     ///   </para>
     ///   <para>
     ///   The status codes are defined in
@@ -1394,8 +1384,7 @@ namespace WebSocketSharp.Server
     ///   -or-
     ///   </para>
     ///   <para>
-    ///   <paramref name="code"/> is 1005 (no status) and
-    ///   there is <paramref name="reason"/>.
+    ///   <paramref name="code"/> is 1005 (no status) and there is reason.
     ///   </para>
     ///   <para>
     ///   -or-
@@ -1407,6 +1396,7 @@ namespace WebSocketSharp.Server
     /// <exception cref="InvalidOperationException">
     /// The underlying <see cref="TcpListener"/> has failed to stop.
     /// </exception>
+    [Obsolete ("This method will be removed.")]
     public void Stop (ushort code, string reason)
     {
       if (!code.IsCloseStatusCode ()) {
@@ -1441,14 +1431,9 @@ namespace WebSocketSharp.Server
     }
 
     /// <summary>
-    /// Stops receiving incoming handshake requests and closes each
-    /// connection with the specified <paramref name="code"/> and
-    /// <paramref name="reason"/>.
+    /// Stops receiving incoming handshake requests and closes each connection
+    /// with the specified code and reason.
     /// </summary>
-    /// <remarks>
-    /// This method does nothing if the server is not started,
-    /// it is shutting down, or it has already stopped.
-    /// </remarks>
     /// <param name="code">
     ///   <para>
     ///   One of the <see cref="CloseStatusCode"/> enum values.
@@ -1475,8 +1460,7 @@ namespace WebSocketSharp.Server
     ///   </para>
     ///   <para>
     ///   <paramref name="code"/> is
-    ///   <see cref="CloseStatusCode.NoStatus"/> and
-    ///   there is <paramref name="reason"/>.
+    ///   <see cref="CloseStatusCode.NoStatus"/> and there is reason.
     ///   </para>
     ///   <para>
     ///   -or-
@@ -1491,6 +1475,7 @@ namespace WebSocketSharp.Server
     /// <exception cref="InvalidOperationException">
     /// The underlying <see cref="TcpListener"/> has failed to stop.
     /// </exception>
+    [Obsolete ("This method will be removed.")]
     public void Stop (CloseStatusCode code, string reason)
     {
       if (code == CloseStatusCode.MandatoryExtension) {
