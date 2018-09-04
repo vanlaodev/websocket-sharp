@@ -617,7 +617,7 @@ namespace WebSocketSharp.Server
     }
 
     /// <summary>
-    /// Gets the configuration for secure connections.
+    /// Gets the configuration for secure connection.
     /// </summary>
     /// <remarks>
     /// This configuration will be referenced when attempts to start,
@@ -833,17 +833,13 @@ namespace WebSocketSharp.Server
       var path = _listener.CertificateFolderPath;
       var withPort = EndPointListener.CertificateExists (_port, path);
 
-      var both = byUser && withPort;
-      if (both) {
-        _log.Warn ("A server certificate associated with the port is used.");
-        return true;
-      }
-
-      var either = byUser || withPort;
-      if (!either) {
-        message = "There is no server certificate for secure connections.";
+      if (!(byUser || withPort)) {
+        message = "There is no server certificate for secure connection.";
         return false;
       }
+
+      if (byUser && withPort)
+        _log.Warn ("The server certificate associated with the port is used.");
 
       return true;
     }
@@ -1459,7 +1455,7 @@ namespace WebSocketSharp.Server
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     ///   <para>
-    ///   There is no server certificate for secure connections.
+    ///   There is no server certificate for secure connection.
     ///   </para>
     ///   <para>
     ///   -or-

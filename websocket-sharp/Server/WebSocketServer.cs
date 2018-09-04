@@ -578,7 +578,7 @@ namespace WebSocketSharp.Server
     }
 
     /// <summary>
-    /// Gets the configuration for secure connections.
+    /// Gets the configuration for secure connection.
     /// </summary>
     /// <remarks>
     /// This configuration will be referenced when attempts to start,
@@ -766,7 +766,7 @@ namespace WebSocketSharp.Server
       message = null;
 
       if (configuration.ServerCertificate == null) {
-        message = "There is no server certificate for secure connections.";
+        message = "There is no server certificate for secure connection.";
         return false;
       }
 
