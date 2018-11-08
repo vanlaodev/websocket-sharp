@@ -560,20 +560,6 @@ namespace WebSocketSharp.Net
       }
     }
 
-    private static void urlDecodeUnicode (
-      byte[] bytes, int offset, Stream output
-    )
-    {
-      var num = getNumber (bytes, offset + 2, 4);
-      if (num == -1) {
-        output.Write (bytes, offset, 6);
-        return;
-      }
-
-      var decoded = Encoding.Unicode.GetBytes (new[] { (char) num });
-      output.Write (decoded, 0, decoded.Length);
-    }
-
     private static void urlEncode (byte b, Stream output)
     {
       if (b > 31 && b < 127) {
@@ -804,82 +790,6 @@ namespace WebSocketSharp.Net
       }
 
       return null;
-    }
-
-    internal static string InternalUrlDecode (
-      byte[] bytes, int offset, int count, Encoding encoding)
-    {
-      var output = new StringBuilder ();
-      using (var acc = new MemoryStream ()) {
-        var end = count + offset;
-        for (var i = offset; i < end; i++) {
-          if (bytes[i] == '%' && i + 2 < count && bytes[i + 1] != '%') {
-            int xchar;
-            if (bytes[i + 1] == (byte) 'u' && i + 5 < end) {
-              if (acc.Length > 0) {
-                output.Append (getChars (acc, encoding));
-                acc.SetLength (0);
-              }
-
-              xchar = getChar (bytes, i + 2, 4);
-              if (xchar != -1) {
-                output.Append ((char) xchar);
-                i += 5;
-
-                continue;
-              }
-            }
-            else if ((xchar = getChar (bytes, i + 1, 2)) != -1) {
-              acc.WriteByte ((byte) xchar);
-              i += 2;
-
-              continue;
-            }
-          }
-
-          if (acc.Length > 0) {
-            output.Append (getChars (acc, encoding));
-            acc.SetLength (0);
-          }
-
-          if (bytes[i] == '+') {
-            output.Append (' ');
-            continue;
-          }
-
-          output.Append ((char) bytes[i]);
-        }
-
-        if (acc.Length > 0)
-          output.Append (getChars (acc, encoding));
-      }
-
-      return output.ToString ();
-    }
-
-    internal static byte[] InternalUrlDecodeToBytes (byte[] bytes, int offset, int count)
-    {
-      using (var res = new MemoryStream ()) {
-        var end = offset + count;
-        for (var i = offset; i < end; i++) {
-          var c = (char) bytes[i];
-          if (c == '+') {
-            c = ' ';
-          }
-          else if (c == '%' && i < end - 2) {
-            var xchar = getChar (bytes, i + 1, 2);
-            if (xchar != -1) {
-              c = (char) xchar;
-              i += 2;
-            }
-          }
-
-          res.WriteByte ((byte) c);
-        }
-
-        res.Close ();
-        return res.ToArray ();
-      }
     }
 
     internal static byte[] InternalUrlEncodeToBytes (
@@ -1169,7 +1079,9 @@ namespace WebSocketSharp.Net
 
       var len = bytes.Length;
       return len > 0
-             ? InternalUrlDecode (bytes, 0, len, encoding ?? Encoding.UTF8)
+             ? (encoding ?? Encoding.UTF8).GetString (
+                 urlDecodeToBytes (bytes, 0, len)
+               )
              : String.Empty;
     }
 
@@ -1198,8 +1110,8 @@ namespace WebSocketSharp.Net
         throw new ArgumentOutOfRangeException ("count");
 
       return count > 0
-             ? InternalUrlDecode (
-                 bytes, offset, count, encoding ?? Encoding.UTF8
+             ? (encoding ?? Encoding.UTF8).GetString (
+                 urlDecodeToBytes (bytes, offset, count)
                )
              : String.Empty;
     }
@@ -1217,19 +1129,14 @@ namespace WebSocketSharp.Net
 
     public static byte[] UrlDecodeToBytes (string s)
     {
-      return UrlDecodeToBytes (s, Encoding.UTF8);
-    }
-
-    public static byte[] UrlDecodeToBytes (string s, Encoding encoding)
-    {
       if (s == null)
-        return null;
+        throw new ArgumentNullException ("s");
 
       if (s.Length == 0)
         return new byte[0];
 
-      var bytes = (encoding ?? Encoding.UTF8).GetBytes (s);
-      return InternalUrlDecodeToBytes (bytes, 0, bytes.Length);
+      var bytes = Encoding.ASCII.GetBytes (s);
+      return urlDecodeToBytes (bytes, 0, bytes.Length);
     }
 
     public static byte[] UrlDecodeToBytes (byte[] bytes, int offset, int count)
